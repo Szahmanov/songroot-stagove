@@ -1,0 +1,22 @@
+{
+  "name": "SongRoot by StaGove",
+  "short_name": "SongRoot",
+  "description": "Автономен агент за българска народна музика",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0a05",
+  "theme_color": "#c8922a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
