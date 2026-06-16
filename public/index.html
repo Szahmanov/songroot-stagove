@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#c8922a" />
+  <meta name="description" content="SongRoot — автономен агент за българска народна музика по регион и повод" />
+  <link rel="manifest" href="/manifest.json" />
+  <title>SongRoot by StaGove</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Tokens ── */
+    :root {
+      --ink:       #0f0a05;
+      --parchment: #f5efe4;
+      --gold:      #c8922a;
+      --gold-dim:  #a07020;
+      --ember:     #8b2e12;
+      --cream:     #faf6ee;
+      --muted:     #7a6e60;
+      --border:    rgba(200,146,42,0.25);
+      --card-bg:   rgba(255,252,245,0.04);
+      --r:         10px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--ink);
+      color: var(--parchment);
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Ambient background pattern ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(ellipse 60% 40% at 20% 10%, rgba(200,146,42,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 60% at 80% 90%, rgba(139,46,18,0.06) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      padding: 52px 0 36px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 44px;
+    }
+
+    .logo-mark {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 18px;
+    }
+
+    .logo-mark svg { width: 100%; height: 100%; }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 6vw, 2.8rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      color: var(--parchment);
+      line-height: 1.1;
+    }
+
+    h1 span { color: var(--gold); }
+
+    .tagline {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .stagove-badge {
+      display: inline-block;
+      margin-top: 14px;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      border: 1px solid var(--border);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    /* ── Form card ── */
+    .form-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 32px 28px;
+      backdrop-filter: blur(4px);
+    }
+
+    .form-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: var(--gold);
+    }
+
+    .field { margin-bottom: 20px; }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+      background: rgba(245,239,228,0.05);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--parchment);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      padding: 11px 14px;
+      appearance: none;
+      -webkit-appearance: none;
+      outline: none;
+      transition: border-color 0.2s;
+      cursor: pointer;
+    }
+
+    select:focus, input[type="number"]:focus {
+      border-color: var(--gold);
+    }
+
+    select option {
+      background: #1a1208;
+      color: var(--parchment);
+    }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 480px) { .row { grid-template-columns: 1fr; } }
+
+    /* ── Generate button ── */
+    .btn-generate {
+      width: 100%;
+      margin-top: 8px;
+      padding: 15px;
+      background: var(--gold);
+      color: var(--ink);
+      border: none;
+      border-radius: 7px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-generate:hover { background: #d9a030; }
+    .btn-generate:active { transform: scale(0.99); }
+    .btn-generate:disabled { background: #5a4a20; color: #8a7a50; cursor: not-allowed; }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(15,10,5,0.3);
+      border-top-color: var(--ink);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .loading .spinner { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Result section ── */
+    #result { margin-top: 40px; }
+
+    .playlist-header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 20px;
+      margin-bottom: 24px;
+    }
+
+    .playlist-meta {
+      font-size: 0.75rem;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .playlist-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+
+    .playlist-desc {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .occasion-note {
+      display: inline-block;
+      margin-top: 12px;
+      font-size: 0.78rem;
+      color: var(--ember);
+      background: rgba(139,46,18,0.12);
+      border: 1px solid rgba(139,46,18,0.25);
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    /* ── Song cards ── */
+    .songs-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .song-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: border-color 0.2s, background 0.2s;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .song-card:hover {
+      border-color: var(--gold);
+      background: rgba(200,146,42,0.06);
+    }
+
+    .song-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: var(--border);
+      min-width: 28px;
+      text-align: center;
+      line-height: 1;
+    }
+
+    .song-card:hover .song-num { color: var(--gold); }
+
+    .song-info { flex: 1; min-width: 0; }
+
+    .song-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .song-artist {
+      font-size: 0.8rem;
+      color: var(--gold-dim);
+      margin-bottom: 4px;
+    }
+
+    .song-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .yt-icon {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      background: rgba(255,0,0,0.15);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .yt-icon svg { width: 16px; height: 16px; fill: #ff4444; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    footer a { color: var(--gold-dim); text-decoration: none; }
+
+    /* ── Error ── */
+    .error-msg {
+      background: rgba(139,46,18,0.15);
+      border: 1px solid rgba(139,46,18,0.35);
+      border-radius: 7px;
+      padding: 14px 18px;
+      font-size: 0.88rem;
+      color: #e07060;
+      margin-top: 20px;
+      display: none;
+    }
+
+    /* ── Install banner ── */
+    #install-banner {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gold);
+      color: var(--ink);
+      padding: 12px 22px;
+      border-radius: 30px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(200,146,42,0.4);
+      z-index: 100;
+      white-space: nowrap;
+    }
+
+    #install-banner:hover { background: #d9a030; }
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- Header -->
+  <header>
+    <div class="logo-mark">
+      <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="28" cy="28" r="27" stroke="#c8922a" stroke-width="1.5"/>
+        <path d="M28 10 C28 10 18 20 18 30 C18 38 22 44 28 46 C34 44 38 38 38 30 C38 20 28 10 28 10Z" fill="none" stroke="#c8922a" stroke-width="1.2"/>
+        <path d="M14 22 Q28 18 42 22" stroke="#c8922a" stroke-width="1" opacity="0.5"/>
+        <path d="M12 32 Q28 28 44 32" stroke="#c8922a" stroke-width="1" opacity="0.5"/>
+        <circle cx="28" cy="28" r="3" fill="#c8922a"/>
+      </svg>
+    </div>
+    <h1>Song<span>Root</span></h1>
+    <p class="tagline">Автономен агент за българска народна музика</p>
+    <span class="stagove-badge">by StaGove</span>
+  </header>
+
+  <!-- Form -->
+  <div class="form-card">
+    <p class="form-title">Открий своята музика</p>
+
+    <div class="row">
+      <div class="field">
+        <label for="region">Регион</label>
+        <select id="region" onchange="updateSubRegions()">
+          <option value="">— Избери —</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="subregion">Под-регион</label>
+        <select id="subregion">
+          <option value="">— Всички —</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="occasion">Повод</label>
+        <select id="occasion">
+          <option value="">— Избери —</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="age">Възраст</label>
+        <input type="number" id="age" placeholder="напр. 68" min="10" max="100" />
+      </div>
+    </div>
+
+    <button class="btn-generate" id="btn" onclick="generatePlaylist()">
+      <div class="spinner" id="spinner"></div>
+      <span id="btn-text">Генерирай плейлист</span>
+    </button>
+
+    <div class="error-msg" id="error"></div>
+  </div>
+
+  <!-- Result -->
+  <div id="result"></div>
+
+  <footer>
+    <p>SongRoot by <a href="#">StaGove</a> &nbsp;·&nbsp; Автономен AI агент &nbsp;·&nbsp; Безплатно</p>
+  </footer>
+</div>
+
+<!-- Install PWA banner -->
+<button id="install-banner" onclick="installPWA()">⬇ Инсталирай като приложение</button>
+
+<script>
+  let regionsData = [];
+  let deferredPrompt = null;
+
+  // ── Load dropdowns ──────────────────────────────────────────────────────
+  async function loadData() {
+    const [regRes, occRes] = await Promise.all([
+      fetch('/api/regions'),
+      fetch('/api/occasions')
+    ]);
+    regionsData = await regRes.json();
+    const occasions = await occRes.json();
+
+    const regionSel = document.getElementById('region');
+    regionsData.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r.name;
+      opt.textContent = r.name;
+      regionSel.appendChild(opt);
+    });
+
+    const occSel = document.getElementById('occasion');
+    occasions.forEach(o => {
+      const opt = document.createElement('option');
+      opt.value = o;
+      opt.textContent = o;
+      occSel.appendChild(opt);
+    });
+  }
+
+  function updateSubRegions() {
+    const region = document.getElementById('region').value;
+    const subSel = document.getElementById('subregion');
+    subSel.innerHTML = '<option value="">— Всички —</option>';
+    if (!region) return;
+    const found = regionsData.find(r => r.name === region);
+    if (found) {
+      found.sub.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        subSel.appendChild(opt);
+      });
+    }
+  }
+
+  // ── Generate ─────────────────────────────────────────────────────────────
+  async function generatePlaylist() {
+    const region = document.getElementById('region').value;
+    const subRegion = document.getElementById('subregion').value;
+    const occasion = document.getElementById('occasion').value;
+    const age = document.getElementById('age').value;
+    const errEl = document.getElementById('error');
+
+    errEl.style.display = 'none';
+    document.getElementById('result').innerHTML = '';
+
+    if (!region || !occasion || !age) {
+      errEl.textContent = 'Моля, попълни всички задължителни полета.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    // Loading state
+    const btn = document.getElementById('btn');
+    btn.disabled = true;
+    btn.classList.add('loading');
+    document.getElementById('btn-text').textContent = 'Агентът търси...';
+
+    try {
+      const res = await fetch('/api/generate-playlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ region, subRegion, occasion, age: parseInt(age) })
+      });
+
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      renderPlaylist(data.playlist, region, subRegion, occasion, age);
+    } catch (err) {
+      errEl.textContent = err.message || 'Грешка при генериране. Опитайте отново.';
+      errEl.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      document.getElementById('btn-text').textContent = 'Генерирай плейлист';
+    }
+  }
+
+  // ── Render ───────────────────────────────────────────────────────────────
+  function renderPlaylist(pl, region, subRegion, occasion, age) {
+    const container = document.getElementById('result');
+
+    const songsHTML = pl.songs.map((song, i) => `
+      <a class="song-card" href="${escHtml(song.youtube_url)}" target="_blank" rel="noopener">
+        <div class="song-num">${i + 1}</div>
+        <div class="song-info">
+          <div class="song-title">${escHtml(song.title)}</div>
+          <div class="song-artist">${escHtml(song.artist)}</div>
+          <div class="song-desc">${escHtml(song.description)}</div>
+        </div>
+        <div class="yt-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8z"/>
+            <polygon points="9.7 15.5 15.8 12 9.7 8.5 9.7 15.5" fill="#0f0a05"/>
+          </svg>
+        </div>
+      </a>
+    `).join('');
+
+    container.innerHTML = `
+      <div class="playlist-header">
+        <p class="playlist-meta">${escHtml(region)}${subRegion ? ' · ' + escHtml(subRegion) : ''} · ${escHtml(occasion)} · ${age} год.</p>
+        <h2 class="playlist-title">${escHtml(pl.playlist_title)}</h2>
+        <p class="playlist-desc">${escHtml(pl.region_description)}</p>
+        <span class="occasion-note">${escHtml(pl.occasion_note)}</span>
+      </div>
+      <div class="songs-list">${songsHTML}</div>
+    `;
+
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function escHtml(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── PWA ──────────────────────────────────────────────────────────────────
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('install-banner').style.display = 'block';
+  });
+
+  function installPWA() {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+      document.getElementById('install-banner').style.display = 'none';
+    });
+  }
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+
+  loadData();
+</script>
+</body>
+</html>
