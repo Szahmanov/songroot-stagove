@@ -49,7 +49,7 @@ function buildSystemPrompt(region, subRegion, occasion, age, genre, decade, arti
 - Повод: ${occasion} — ${occasionDesc}
 - Възраст: ${age} години${extraGenre}${extraDecade}${extraArtists}
 
-ЗАДАЧА: Генерирай точно 8 песни.
+ЗАДАЧА: Генерирай точно 20 песни.
 
 ПРАВИЛА:
 1. Само РЕАЛНИ, добре познати песни — не измисляй
@@ -86,7 +86,7 @@ app.post('/api/generate-playlist', async (req, res) => {
         { role:'user', content: `Генерирай плейлист: ${region}${subRegion?` (${subRegion})`:''}, повод: ${occasion}, възраст: ${age}${genre?`, жанр: ${genre}`:''}${decade?`, десетилетие: ${decade}`:''}${artists?`, изпълнители: ${artists}`:''}` }
       ],
       temperature: 0.7,
-      max_tokens: 2000
+      max_tokens: 4000
     });
 
     const raw = completion.choices[0].message.content.trim();
